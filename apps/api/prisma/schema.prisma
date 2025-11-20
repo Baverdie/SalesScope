@@ -1,0 +1,119 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  memberships    OrganizationMember[]
+  refreshTokens  RefreshToken[]
+  createdDatasets Dataset[]
+
+  @@map("users")
+}
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  members  OrganizationMember[]
+  datasets Dataset[]
+
+  @@map("organizations")
+}
+
+model OrganizationMember {
+  id             String   @id @default(cuid())
+  userId         String
+  organizationId String
+  role           String   // OWNER, ADMIN, MEMBER
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, organizationId])
+  @@index([userId])
+  @@index([organizationId])
+  @@map("organization_members")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  revokedAt DateTime?
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@map("refresh_tokens")
+}
+
+model Dataset {
+  id             String   @id @default(cuid())
+  organizationId String
+  createdById    String
+  name           String
+  fileName       String
+  fileSize       Int
+  rowCount       Int      @default(0)
+  columns        Json     // Array of {name, type, nullable}
+  status         String   // UPLOADING, PROCESSING, READY, FAILED
+  errorMessage   String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdBy    User         @relation(fields: [createdById], references: [id])
+  salesData    SalesData[]
+
+  @@index([organizationId])
+  @@index([status])
+  @@map("datasets")
+}
+
+model SalesData {
+  id         String   @id @default(cuid())
+  datasetId  String
+  date       DateTime
+  revenue    Float
+  quantity   Int
+  product    String?
+  category   String?
+  createdAt  DateTime @default(now())
+
+  // Relations
+  dataset Dataset @relation(fields: [datasetId], references: [id], onDelete: Cascade)
+
+  @@index([datasetId])
+  @@index([date])
+  @@index([category])
+  @@index([product])
+  @@map("sales_data")
+}

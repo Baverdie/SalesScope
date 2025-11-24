@@ -54,16 +54,7 @@ await fastify.register(fastifyHelmet, {
 });
 
 await fastify.register(fastifyCors, {
-  origin: isDevelopment
-    ? (origin, cb) => {
-      // En dev, accepte tous les localhost
-      if (!origin || origin.startsWith('http://localhost:')) {
-        cb(null, true);
-      } else {
-        cb(new Error('Not allowed by CORS'), false);
-      }
-    }
-    : config.cors.origin,
+  origin: process.env.CORS_ORIGIN || config.cors.origin || '*',
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
 });

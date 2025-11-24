@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch --clear-screen=false src/server.ts",
-    "build": "prisma generate && tsc",
+    "build": "prisma generate && pnpm rebuild bcrypt && tsc",
     "start": "node dist/server.js",
     "test": "jest",
     "test:watch": "jest --watch",

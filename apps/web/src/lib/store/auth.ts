@@ -1,30 +1,28 @@
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
-import type { User } from '@salesscope/types';
+import { persist } from 'zustand/middleware';
 
 interface AuthState {
   accessToken: string | null;
-  user: User | null;
-  isAuthenticated: boolean;
-  setAuth: (accessToken: string, user: User) => void;
-  clearAuth: () => void;
+  refreshToken: string | null;
+  user: { id: string; email: string; name: string } | null;
+  setTokens: (accessToken: string, refreshToken: string) => void;
+  setUser: (user: { id: string; email: string; name: string }) => void;
+  logout: () => void;
 }
 
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       accessToken: null,
+      refreshToken: null,
       user: null,
-      isAuthenticated: false,
-      setAuth: (accessToken, user) =>
-        set({ accessToken, user, isAuthenticated: true }),
-      clearAuth: () =>
-        set({ accessToken: null, user: null, isAuthenticated: false }),
+      setTokens: (accessToken, refreshToken) =>
+        set({ accessToken, refreshToken }),
+      setUser: (user) => set({ user }),
+      logout: () => set({ accessToken: null, refreshToken: null, user: null }),
     }),
     {
-      name: 'auth-storage',
-      storage: createJSONStorage(() => localStorage),
-      skipHydration: false,
+      name: 'auth-storage', // nom de la clé dans localStorage
     }
   )
 );

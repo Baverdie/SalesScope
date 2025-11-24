@@ -31,3 +31,11 @@ out/
 # System files
 .DS_Store
 Thumbs.db
+
+.next/
+.cache/
+*.tsbuildinfo
+coverage/
+*.env.test
+*.env.production
+*.env.development

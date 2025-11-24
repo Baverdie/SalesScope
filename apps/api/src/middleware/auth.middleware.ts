@@ -1,5 +1,5 @@
 import type { FastifyRequest, FastifyReply } from 'fastify';
-import { verifyAccessToken } from '../utils/jwt';
+import { verifyAccessToken } from '../utils/jwt.js';
 import type { AccessTokenPayload } from '@salesscope/types';
 import { logger } from '../utils/logger';
 

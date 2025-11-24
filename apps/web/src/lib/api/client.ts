@@ -17,7 +17,7 @@ class ApiClient {
 
   constructor(baseURL: string) {
     this.baseURL = baseURL;
-    
+
     // Load token from localStorage if available
     if (typeof window !== 'undefined') {
       this.accessToken = localStorage.getItem('accessToken');
@@ -44,10 +44,9 @@ class ApiClient {
     options: RequestInit = {}
   ): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
-    
-    const headers: HeadersInit = {
+
+    const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      ...options.headers,
     };
 
     if (this.accessToken) {
@@ -75,7 +74,7 @@ class ApiClient {
       if (error instanceof ApiError) {
         throw error;
       }
-      
+
       throw new ApiError(
         error instanceof Error ? error.message : 'Network error',
         0

@@ -22,11 +22,22 @@
     "resolveJsonModule": true,
     "outDir": "./dist",
     "rootDir": "./src",
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    },
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": false
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "**/*.test.ts"],
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.test.ts"
+  ],
   "ts-node": {
     "esm": true
   }

@@ -1,13 +1,18 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { prisma } from '@/config/prisma';
+import type { AccessTokenPayload } from '@salesscope/types';
 
 declare module 'fastify' {
   interface FastifyRequest {
-    user?: {
-      id: string;
-      email: string;
-    };
+    user?: AccessTokenPayload;
     organizationId?: string;
+  }
+}
+
+// Augment FastifyRequest with jwtVerify provided by @fastify/jwt
+declare module 'fastify' {
+  interface FastifyRequest {
+    jwtVerify?: (opts?: unknown) => Promise<void>;
   }
 }
 
@@ -17,23 +22,18 @@ export async function authenticate(
 ): Promise<void> {
   try {
     await request.jwtVerify();
-    
-    const payload = request.user as { sub: string; email: string };
-    
+
+    const payload = request.user as AccessTokenPayload;
+
     // Verify user still exists
     const user = await prisma.user.findUnique({
-      where: { id: payload.sub },
+      where: { id: payload.userId },
       select: { id: true, email: true },
     });
 
     if (!user) {
       return reply.code(401).send({ error: 'User not found' });
     }
-
-    request.user = {
-      id: user.id,
-      email: user.email,
-    };
   } catch (error) {
     return reply.code(401).send({ error: 'Invalid or expired token' });
   }
@@ -54,10 +54,10 @@ export async function requireOrganization(
   }
 
   // Verify user has access to this organization
-  const membership = await prisma.membership.findFirst({
+  const membership = await prisma.organizationMember.findFirst({
     where: {
-      userId: request.user.id,
-      orgId,
+      userId: request.user?.userId,
+      organizationId: orgId,
     },
     include: {
       organization: true,

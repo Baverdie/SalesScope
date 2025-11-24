@@ -298,7 +298,12 @@ export class DatasetService {
 			}),
 		});
 
-		return dataset as Dataset | null;
+		if (!dataset) return null;
+
+		return ({
+			...dataset,
+			columns: (dataset.columns as unknown) as DatasetColumn[],
+		} as Dataset);
 	}
 
 	/**
@@ -322,7 +327,10 @@ export class DatasetService {
 		]);
 
 		return {
-			datasets: datasets as Dataset[],
+			datasets: datasets.map((d) => ({
+				...d,
+				columns: (d.columns as unknown) as DatasetColumn[],
+			})) as Dataset[],
 			total,
 		};
 	}

@@ -1,11 +1,11 @@
 import type { FastifyRequest, FastifyReply } from 'fastify';
-import { verifyAccessToken } from '../utils/jwt.js';
+import { verifyAccessToken } from '../utils/jwt';
 import type { AccessTokenPayload } from '@salesscope/types';
-import { logger } from '../utils/logger.js';
+import { logger } from '../utils/logger';
 
 declare module 'fastify' {
   interface FastifyRequest {
-    user: AccessTokenPayload;
+    user?: AccessTokenPayload;
   }
 }
 

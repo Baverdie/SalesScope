@@ -19,22 +19,18 @@ export const tokenUtils = {
   /**
    * Create and store a refresh token in the database
    */
-  async createRefreshToken(
-    userId: string,
-    ipAddress?: string,
-    userAgent?: string
-  ): Promise<string> {
+  async createRefreshToken(userId: string): Promise<string> {
     const token = this.generateRefreshToken();
     const expiresAt = new Date();
-    
+
     // Parse refresh token expiration (e.g., "7d" -> 7 days)
     const expiresIn = env.JWT_REFRESH_EXPIRES_IN;
     const match = expiresIn.match(/^(\d+)([dhms])$/);
-    
+
     if (match) {
       const value = parseInt(match[1]);
       const unit = match[2];
-      
+
       switch (unit) {
         case 'd':
           expiresAt.setDate(expiresAt.getDate() + value);
@@ -56,8 +52,6 @@ export const tokenUtils = {
         token,
         userId,
         expiresAt,
-        ipAddress,
-        userAgent,
       },
     });
 
@@ -81,7 +75,7 @@ export const tokenUtils = {
       return { valid: false, error: 'Token not found' };
     }
 
-    if (refreshToken.revoked) {
+    if (refreshToken.revokedAt) {
       return { valid: false, error: 'Token has been revoked' };
     }
 
@@ -98,7 +92,7 @@ export const tokenUtils = {
   async revokeRefreshToken(token: string): Promise<void> {
     await prisma.refreshToken.update({
       where: { token },
-      data: { revoked: true },
+      data: { revokedAt: new Date() },
     });
   },
 
@@ -108,7 +102,7 @@ export const tokenUtils = {
   async revokeAllUserTokens(userId: string): Promise<void> {
     await prisma.refreshToken.updateMany({
       where: { userId },
-      data: { revoked: true },
+      data: { revokedAt: new Date() },
     });
   },
 
@@ -145,14 +139,9 @@ export const tokenUtils = {
       },
     });
 
-    // If more than 3 tokens created in the last minute from different IPs/agents
+    // If more than 3 tokens created in the last minute, consider it suspicious
     if (recentTokens.length > 3) {
-      const uniqueIps = new Set(recentTokens.map((t) => t.ipAddress));
-      const uniqueAgents = new Set(recentTokens.map((t) => t.userAgent));
-
-      if (uniqueIps.size > 2 || uniqueAgents.size > 2) {
-        return true;
-      }
+      return true;
     }
 
     return false;

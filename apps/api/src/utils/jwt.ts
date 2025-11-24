@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
-import { config } from './config.js';
-import { prisma } from './db.js';
+import { config } from './config';
+import { prisma } from './db';
 import type { AccessTokenPayload, RefreshTokenPayload } from '@salesscope/types';
 
 const ACCESS_TOKEN_EXPIRES_IN_MS = 15 * 60 * 1000; // 15 minutes
@@ -15,11 +15,11 @@ export interface TokenPair {
  * Generate access token (short-lived)
  */
 export const generateAccessToken = (payload: AccessTokenPayload): string => {
-  return jwt.sign(payload, config.jwt.accessSecret, {
+  return jwt.sign(payload, config.jwt.accessSecret as any, {
     expiresIn: config.jwt.accessExpiresIn,
     issuer: 'salesscope-api',
     audience: 'salesscope-web',
-  });
+  } as any);
 };
 
 /**
@@ -36,11 +36,11 @@ export const generateRefreshToken = async (
     tokenId,
   };
 
-  const token = jwt.sign(payload, config.jwt.refreshSecret, {
+  const token = jwt.sign(payload, config.jwt.refreshSecret as any, {
     expiresIn: config.jwt.refreshExpiresIn,
     issuer: 'salesscope-api',
     audience: 'salesscope-web',
-  });
+  } as any);
 
   // Store refresh token in database for revocation capability
   await prisma.refreshToken.create({

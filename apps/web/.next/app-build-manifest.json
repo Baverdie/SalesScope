@@ -11,15 +11,15 @@
       "static/chunks/main-app.js",
       "static/chunks/app/dashboard/page.js"
     ],
-    "/datasets/page": [
+    "/(auth)/login/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/datasets/page.js"
+      "static/chunks/app/(auth)/login/page.js"
     ],
-    "/analytics/[datasetId]/page": [
+    "/_not-found/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/analytics/[datasetId]/page.js"
+      "static/chunks/app/_not-found/page.js"
     ]
   }
 }

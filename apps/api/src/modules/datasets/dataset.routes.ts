@@ -147,7 +147,8 @@ export async function datasetRoutes(fastify: FastifyInstance) {
 				const params = getDatasetSchema.parse(request.params);
 				const dataset = await datasetService.getDataset(
 					params.datasetId,
-					request.user.organizationId
+					request.user.organizationId,
+					{ includeSalesData: true, limit: 1000 }
 				);
 
 				if (!dataset) {

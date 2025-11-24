@@ -2,9 +2,10 @@
 
 import { useAuthStore } from '@/lib/store/auth';
 import { useLogout } from '@/hooks/use-auth';
+import { useDatasets } from '@/hooks/use-datasets';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { CSVUploader } from '@/components/datasets/csv-uploader';
 import { DatasetList } from '@/components/datasets/dataset-list';
@@ -13,13 +14,27 @@ export default function DatasetsPage() {
 	const { user, isAuthenticated } = useAuthStore();
 	const logout = useLogout();
 	const router = useRouter();
+	const [mounted, setMounted] = useState(false);
+	const { refetch } = useDatasets();
 
+	// Wait for component to mount (client-side only)
 	useEffect(() => {
-		if (!isAuthenticated) {
+		setMounted(true);
+	}, []);
+
+	// Redirect only after mount
+	useEffect(() => {
+		if (mounted && !isAuthenticated) {
 			router.push('/login');
 		}
-	}, [isAuthenticated, router]);
+	}, [mounted, isAuthenticated, router]);
 
+	// Don't render anything until mounted
+	if (!mounted) {
+		return null;
+	}
+
+	// Show loading if not authenticated
 	if (!isAuthenticated || !user) {
 		return null;
 	}
@@ -74,7 +89,11 @@ export default function DatasetsPage() {
 
 					<div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 						<div className="lg:col-span-1">
-							<CSVUploader />
+							<CSVUploader
+								onSuccess={() => {
+									refetch();
+								}}
+							/>
 						</div>
 
 						<div className="lg:col-span-2">

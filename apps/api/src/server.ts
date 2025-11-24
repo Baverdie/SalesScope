@@ -10,6 +10,7 @@ import { redis } from './utils/redis.js';
 import { authenticate } from './middleware/auth.middleware.js';
 import { authRoutes } from './modules/auth/auth.routes.js';
 import { datasetRoutes } from './modules/datasets/dataset.routes.js';
+import { analyticsRoutes } from './modules/analytics/analytics.routes.js';
 
 // Declare custom properties
 declare module 'fastify' {
@@ -53,7 +54,16 @@ await fastify.register(fastifyHelmet, {
 });
 
 await fastify.register(fastifyCors, {
-  origin: config.cors.origin,
+  origin: isDevelopment
+    ? (origin, cb) => {
+      // En dev, accepte tous les localhost
+      if (!origin || origin.startsWith('http://localhost:')) {
+        cb(null, true);
+      } else {
+        cb(new Error('Not allowed by CORS'), false);
+      }
+    }
+    : config.cors.origin,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
 });
@@ -107,10 +117,12 @@ fastify.get('/health', async (request, reply) => {
 });
 
 // API routes
+// API routes
 await fastify.register(
   async (fastify) => {
     await fastify.register(authRoutes, { prefix: '/auth' });
     await fastify.register(datasetRoutes, { prefix: '/datasets' });
+    await fastify.register(analyticsRoutes, { prefix: '/analytics' });
   },
   { prefix: '/api' }
 );
@@ -140,9 +152,15 @@ fastify.setErrorHandler((error, request, reply) => {
 
   // Don't leak error details in production
   const message =
-    config.app.env === 'production' ? 'Internal server error' : error.message;
+    config.app.env === 'production'
+      ? 'Internal server error'
+      : error instanceof Error
+      ? error.message
+      : 'Unknown error';
 
-  reply.code(error.statusCode || 500).send({
+  const statusCode = typeof error === 'object' && error !== null && 'statusCode' in error ? (error as any).statusCode : 500;
+
+  reply.code(statusCode).send({
     success: false,
     error: {
       code: 'INTERNAL_ERROR',

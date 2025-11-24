@@ -24,7 +24,8 @@ export function DatasetList() {
 		);
 	}
 
-	const datasets = data?.datasets || [];
+	// FIX: data is already the array, not data.datasets
+	const datasets = Array.isArray(data) ? data : [];
 
 	if (datasets.length === 0) {
 		return (

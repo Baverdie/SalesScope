@@ -77,11 +77,11 @@ export class DatasetService {
 				}
 			}
 
-			let type: ColumnType = 'STRING';
+			let type: ColumnType = 'STRING' as ColumnType;
 			if (isDate) {
-				type = 'DATE';
+				type = 'DATE' as ColumnType;
 			} else if (isNumber) {
-				type = 'NUMBER';
+				type = 'NUMBER' as ColumnType;
 			}
 
 			return {
@@ -190,7 +190,7 @@ export class DatasetService {
 			undefined;
 
 		return {
-			date: dateValue,
+			date: dateValue.toISOString(),
 			revenue: revenueValue,
 			quantity: quantityValue,
 			product,
@@ -275,13 +275,27 @@ export class DatasetService {
 	 */
 	async getDataset(
 		datasetId: string,
-		organizationId: string
+		organizationId: string,
+		options?: {
+			includeSalesData?: boolean;
+			limit?: number;
+		}
 	): Promise<Dataset | null> {
+		const { includeSalesData = true, limit = 1000 } = options || {};
+
 		const dataset = await prisma.dataset.findFirst({
 			where: {
 				id: datasetId,
 				organizationId,
 			},
+			...(includeSalesData && {
+				include: {
+					salesData: {
+						take: limit,
+						orderBy: { date: 'desc' },
+					},
+				},
+			}),
 		});
 
 		return dataset as Dataset | null;

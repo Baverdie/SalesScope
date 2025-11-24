@@ -2,11 +2,11 @@ import { z } from 'zod';
 
 export const uploadDatasetSchema = z.object({
 	name: z.string().min(1, 'Dataset name is required').max(255),
-	file: z.any(), // File will be validated separately
+	file: z.any(),
 });
 
 export const getDatasetSchema = z.object({
-	datasetId: z.string().cuid('Invalid dataset ID'),
+	datasetId: z.string(),
 });
 
 export const listDatasetsSchema = z.object({

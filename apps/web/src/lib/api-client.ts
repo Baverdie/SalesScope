@@ -25,12 +25,16 @@ class ApiClient {
     const url = `${this.baseURL}${endpoint}`;
 
     const headers: HeadersInit = {
-      'Content-Type': 'application/json',
       ...options.headers,
     };
 
+    // Only set Content-Type for requests with a body
+    if (options.body) {
+      (headers as Record<string, string>)['Content-Type'] = 'application/json';
+    }
+
     if (this.accessToken) {
-      headers['Authorization'] = `Bearer ${this.accessToken}`;
+      (headers as Record<string, string>)['Authorization'] = `Bearer ${this.accessToken}`;
     }
 
     const config: RequestInit = {
@@ -139,6 +143,85 @@ class ApiClient {
     return this.request(`/api/datasets/${datasetId}`, {
       method: 'DELETE',
     });
+  }
+
+  // Analytics endpoints
+  async getKPIs(datasetId: string, filters: any = {}): Promise<ApiResponse> {
+    const params = new URLSearchParams();
+    if (filters.startDate) params.append('startDate', filters.startDate);
+    if (filters.endDate) params.append('endDate', filters.endDate);
+    if (filters.category) params.append('category', filters.category);
+    if (filters.product) params.append('product', filters.product);
+
+    const query = params.toString();
+    return this.request(
+      `/api/analytics/${datasetId}/kpis${query ? `?${query}` : ''}`
+    );
+  }
+
+  async getRevenueByDate(
+    datasetId: string,
+    filters: any = {}
+  ): Promise<ApiResponse> {
+    const params = new URLSearchParams();
+    if (filters.startDate) params.append('startDate', filters.startDate);
+    if (filters.endDate) params.append('endDate', filters.endDate);
+    if (filters.category) params.append('category', filters.category);
+    if (filters.product) params.append('product', filters.product);
+
+    const query = params.toString();
+    return this.request(
+      `/api/analytics/${datasetId}/revenue-by-date${query ? `?${query}` : ''}`
+    );
+  }
+
+  async getRevenueByCategory(
+    datasetId: string,
+    filters: any = {}
+  ): Promise<ApiResponse> {
+    const params = new URLSearchParams();
+    if (filters.startDate) params.append('startDate', filters.startDate);
+    if (filters.endDate) params.append('endDate', filters.endDate);
+    if (filters.category) params.append('category', filters.category);
+    if (filters.product) params.append('product', filters.product);
+
+    const query = params.toString();
+    return this.request(
+      `/api/analytics/${datasetId}/revenue-by-category${query ? `?${query}` : ''}`
+    );
+  }
+
+  async getRevenueByProduct(
+    datasetId: string,
+    filters: any = {}
+  ): Promise<ApiResponse> {
+    const params = new URLSearchParams();
+    if (filters.startDate) params.append('startDate', filters.startDate);
+    if (filters.endDate) params.append('endDate', filters.endDate);
+    if (filters.category) params.append('category', filters.category);
+    if (filters.product) params.append('product', filters.product);
+
+    const query = params.toString();
+    return this.request(
+      `/api/analytics/${datasetId}/revenue-by-product${query ? `?${query}` : ''}`
+    );
+  }
+
+  async getAvailableFilters(datasetId: string): Promise<ApiResponse> {
+    return this.request(`/api/analytics/${datasetId}/filters`);
+  }
+
+  // Analytics - Dashboard endpoints
+  async getOverview(): Promise<ApiResponse> {
+    return this.request('/api/analytics/overview');
+  }
+
+  async getDatasetsSummary(): Promise<ApiResponse> {
+    return this.request('/api/analytics/datasets-summary');
+  }
+
+  async getTrends(): Promise<ApiResponse> {
+    return this.request('/api/analytics/trends');
   }
 }
 

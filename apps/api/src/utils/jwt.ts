@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
-import { config } from './config';
-import { prisma } from './db';
+import { config } from './config.js';
+import { prisma } from './db.js';
 import type { AccessTokenPayload, RefreshTokenPayload } from '@salesscope/types';
 
 const ACCESS_TOKEN_EXPIRES_IN_MS = 15 * 60 * 1000; // 15 minutes

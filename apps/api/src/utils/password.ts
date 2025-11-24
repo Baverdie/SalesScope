@@ -1,4 +1,4 @@
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 const SALT_ROUNDS = 12; // High cost factor for security
 

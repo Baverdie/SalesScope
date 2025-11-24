@@ -32,7 +32,7 @@ out/
 .DS_Store
 Thumbs.db
 
-.next/
+*/.next/
 .cache/
 *.tsbuildinfo
 coverage/

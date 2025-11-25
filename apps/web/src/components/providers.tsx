@@ -28,6 +28,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   // 🔧 FIX : Initialiser l'apiClient au mount
   useEffect(() => {
+    useAuthStore.persist.rehydrate();
     const initializeAuth = async () => {
       const accessToken = useAuthStore.getState().accessToken;
 

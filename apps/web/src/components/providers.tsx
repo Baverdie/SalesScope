@@ -45,13 +45,14 @@ export function Providers({ children }: { children: React.ReactNode }) {
             // Mettre à jour le store avec le nouveau token
             const userResponse = await apiClient.getCurrentUser();
             if (userResponse.success && userResponse.data) {
-              useAuthStore.getState().setAuth(newToken, userResponse.data as any);
+              useAuthStore.getState().setTokens(newToken, ''); // Le refresh token est déjà dans le store
+              useAuthStore.getState().setUser(userResponse.data as any);
             }
           }
         } catch (error) {
           // Si le refresh échoue, clear l'auth
           console.error('Failed to refresh token on mount:', error);
-          useAuthStore.getState().clearAuth();
+          useAuthStore.getState().logout();
           apiClient.setAccessToken(null);
         }
       }

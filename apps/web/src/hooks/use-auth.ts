@@ -18,7 +18,7 @@ interface LoginInput {
 
 export function useRegister() {
   const router = useRouter();
-  const setAuth = useAuthStore((state) => state.setAuth);
+  const { setTokens, setUser } = useAuthStore();
 
   return useMutation({
     mutationFn: async (data: RegisterInput) => {
@@ -31,11 +31,12 @@ export function useRegister() {
     onSuccess: async (data) => {
       // Set access token
       apiClient.setAccessToken(data.accessToken);
+      setTokens(data.accessToken, '');
 
       // Fetch user info
       const userResponse = await apiClient.getCurrentUser();
       if (userResponse.success && userResponse.data) {
-        setAuth(data.accessToken, userResponse.data as User);
+        setUser(userResponse.data as User);
         router.push('/dashboard');
       }
     },
@@ -44,7 +45,7 @@ export function useRegister() {
 
 export function useLogin() {
   const router = useRouter();
-  const setAuth = useAuthStore((state) => state.setAuth);
+  const { setTokens, setUser } = useAuthStore();
 
   return useMutation({
     mutationFn: async (data: LoginInput) => {
@@ -57,11 +58,12 @@ export function useLogin() {
     onSuccess: async (data) => {
       // Set access token
       apiClient.setAccessToken(data.accessToken);
+      setTokens(data.accessToken, '');
 
       // Fetch user info
       const userResponse = await apiClient.getCurrentUser();
       if (userResponse.success && userResponse.data) {
-        setAuth(data.accessToken, userResponse.data as User);
+        setUser(userResponse.data as User);
         router.push('/dashboard');
       }
     },
@@ -70,7 +72,7 @@ export function useLogin() {
 
 export function useLogout() {
   const router = useRouter();
-  const clearAuth = useAuthStore((state) => state.clearAuth);
+  const logout = useAuthStore((state) => state.logout);
 
   return useMutation({
     mutationFn: async () => {
@@ -78,7 +80,7 @@ export function useLogout() {
     },
     onSuccess: () => {
       apiClient.setAccessToken(null);
-      clearAuth();
+      logout();
       router.push('/login');
     },
   });

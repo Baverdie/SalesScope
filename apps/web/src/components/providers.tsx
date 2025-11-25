@@ -28,38 +28,26 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   // 🔧 FIX : Initialiser l'apiClient au mount
   useEffect(() => {
-    useAuthStore.persist.rehydrate();
-    const initializeAuth = async () => {
-      const accessToken = useAuthStore.getState().accessToken;
+    // Hydrate from sessionStorage
+    const accessToken = sessionStorage.getItem('accessToken');
+    const refreshToken = sessionStorage.getItem('refreshToken');
+    const userStr = sessionStorage.getItem('user');
 
-      if (accessToken) {
-        // Restaurer le token dans l'apiClient
-        apiClient.setAccessToken(accessToken);
+    if (accessToken && userStr) {
+      const user = JSON.parse(userStr);
+      useAuthStore.setState({
+        accessToken,
+        refreshToken: refreshToken || '',
+        user,
+        isAuthenticated: true,
+        _hasHydrated: true,
+      });
 
-        // Essayer de refresh le token au cas où il serait expiré
-        try {
-          const response = await apiClient.refresh();
-          if (response.success && response.data) {
-            const newToken = response.data.accessToken;
-            apiClient.setAccessToken(newToken);
-
-            // Mettre à jour le store avec le nouveau token
-            const userResponse = await apiClient.getCurrentUser();
-            if (userResponse.success && userResponse.data) {
-              useAuthStore.getState().setTokens(newToken, ''); // Le refresh token est déjà dans le store
-              useAuthStore.getState().setUser(userResponse.data as any);
-            }
-          }
-        } catch (error) {
-          // Si le refresh échoue, clear l'auth
-          console.error('Failed to refresh token on mount:', error);
-          useAuthStore.getState().logout();
-          apiClient.setAccessToken(null);
-        }
-      }
-    };
-
-    initializeAuth();
+      // Restore token in apiClient
+      apiClient.setAccessToken(accessToken);
+    } else {
+      useAuthStore.setState({ _hasHydrated: true });
+    }
   }, []);
 
   return (

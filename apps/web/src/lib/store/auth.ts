@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 
 interface AuthState {
   accessToken: string | null;
@@ -9,28 +8,44 @@ interface AuthState {
   setTokens: (accessToken: string, refreshToken: string) => void;
   setUser: (user: { id: string; email: string; name: string }) => void;
   logout: () => void;
+  _hasHydrated: boolean;
+  setHasHydrated: (state: boolean) => void;
 }
 
-export const useAuthStore = create<AuthState>()(
-  persist(
-    (set) => ({
+export const useAuthStore = create<AuthState>((set) => ({
+  accessToken: null,
+  refreshToken: null,
+  user: null,
+  isAuthenticated: false,
+  _hasHydrated: false,
+  setTokens: (accessToken, refreshToken) => {
+    set({ accessToken, refreshToken, isAuthenticated: true });
+    // Save to sessionStorage
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('accessToken', accessToken);
+      sessionStorage.setItem('refreshToken', refreshToken);
+    }
+  },
+  setUser: (user) => {
+    set({ user });
+    // Save to sessionStorage
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('user', JSON.stringify(user));
+    }
+  },
+  logout: () => {
+    set({
       accessToken: null,
       refreshToken: null,
       user: null,
-      isAuthenticated: false,
-      setTokens: (accessToken, refreshToken) =>
-        set({ accessToken, refreshToken, isAuthenticated: true }),
-      setUser: (user) => set({ user }),
-      logout: () => set({
-        accessToken: null,
-        refreshToken: null,
-        user: null,
-        isAuthenticated: false
-      }),
-    }),
-    {
-      name: 'auth-storage',
-      skipHydration: true, // 👈 Important pour Next.js
+      isAuthenticated: false
+    });
+    // Clear sessionStorage
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('accessToken');
+      sessionStorage.removeItem('refreshToken');
+      sessionStorage.removeItem('user');
     }
-  )
-);
+  },
+  setHasHydrated: (state) => set({ _hasHydrated: state }),
+}));
